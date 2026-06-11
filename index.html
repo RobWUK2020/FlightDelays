@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emirates Connections Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #C41E3A 0%, #A01829 100%);
+            padding: 30px;
+            border-radius: 0;
+            box-shadow: 0 8px 32px rgba(196, 30, 58, 0.3);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            transform: translate(-30%, 30%);
+        }
+
+        .header h1 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .search-box, .filter-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="text"], select {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #C41E3A;
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.15);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-top: 4px solid #C41E3A;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #C41E3A;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-card.delayed {
+            background: linear-gradient(135deg, rgba(196, 30, 58, 0.1) 0%, rgba(196, 30, 58, 0.05) 100%);
+            border-top-color: #C41E3A;
+        }
+
+        .stat-card.delayed .stat-number {
+            color: #C41E3A;
+        }
+
+        .flights-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .flight-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #C41E3A;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .flight-card:hover {
+            box-shadow: 0 8px 24px rgba(196, 30, 58, 0.15);
+            transform: translateY(-3px);
+            border-left-color: #A01829;
+        }
+
+        .flight-card.delayed {
+            border-left-color: #C41E3A;
+            background: linear-gradient(to right, rgba(196, 30, 58, 0.04), white);
+        }
+
+        .flight-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .flight-header {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .flight-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #C41E3A;
+        }
+
+        .route-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+
+        .route-info strong {
+            color: #333;
+        }
+
+        .arrow {
+            color: #c41e3a;
+            font-size: 20px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-on-time {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-delayed {
+            background: #ffebee;
+            color: #c41e3a;
+        }
+
+        .status-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .info-item {
+            font-size: 13px;
+        }
+
+        .info-label {
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .passenger-count {
+            display: inline-block;
+            background: #C41E3A;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+
+        .last-updated {
+            background: linear-gradient(135deg, #C41E3A 0%, #A01829 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔴 EMIRATES CONNECTIONS TRACKER</h1>
+            <p>Real-time flight monitoring for crew</p>
+            
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by passenger name or flight..." />
+                </div>
+                <div class="filter-box">
+                    <select id="statusFilter">
+                        <option value="">All Flights</option>
+                        <option value="delayed">Delayed Only</option>
+                        <option value="on-time">On Time Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalPassengers">0</div>
+                    <div class="stat-label">Total Passengers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalConnections">0</div>
+                    <div class="stat-label">Connections</div>
+                </div>
+                <div class="stat-card delayed">
+                    <div class="stat-number" id="delayedCount">0</div>
+                    <div class="stat-label">Delayed Flights</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="affectedPassengers">0</div>
+                    <div class="stat-label">Affected</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="last-updated" id="lastUpdated">
+            Last updated: Just now
+        </div>
+
+        <div class="flights-container" id="flightsContainer">
+            <!-- Flights will be populated here -->
+        </div>
+
+        <div class="footer">
+            <p>Emirates Flight Operations • Data refreshes every 30 seconds</p>
+        </div>
+    </div>
+
+    <script>
+        // Sample data - in a real app, this would come from an API
+        const flightData = [
+            {
+                flightNumber: 'EK101',
+                from: 'DXB',
+                to: 'LHR',
+                departure: '14:30',
+                arrival: '18:45',
+                status: 'on-time',
+                delay: 0,
+                passengers: ['Ahmed Hassan', 'Fatima Al Mansoori', 'Mohammed Khan'],
+                gate: 'A12',
+                terminal: '3'
+            },
+            {
+                flightNumber: 'EK203',
+                from: 'DXB',
+                to: 'CDG',
+                departure: '16:15',
+                arrival: '20:30',
+                status: 'delayed',
+                delay: 45,
+                passengers: ['Sarah Johnson', 'Michael Brown', 'Emma Wilson', 'James Taylor'],
+                gate: 'B05',
+                terminal: '1'
+            },
+            {
+                flightNumber: 'EK405',
+                from: 'DXB',
+                to: 'JFK',
+                departure: '17:00',
+                arrival: '22:15',
+                status: 'on-time',
+                delay: 0,
+                passengers: ['Lisa Anderson'],
+                gate: 'C18',
+                terminal: '2'
+            },
+            {
+                flightNumber: 'EK507',
+                from: 'DXB',
+                to: 'SYD',
+                departure: '18:45',
+                arrival: '06:30',
+                status: 'delayed',
+                delay: 120,
+                passengers: ['David Smith', 'Jennifer Davis', 'Robert Wilson'],
+                gate: 'D09',
+                terminal: '3'
+            },
+            {
+                flightNumber: 'EK612',
+                from: 'DXB',
+                to: 'SGP',
+                departure: '19:30',
+                arrival: '23:15',
+                status: 'on-time',
+                delay: 0,
+                passengers: ['Priya Sharma', 'Rajesh Kumar'],
+                gate: 'E22',
+                terminal: '1'
+            },
+            {
+                flightNumber: 'EK714',
+                from: 'DXB',
+                to: 'BKK',
+                departure: '20:15',
+                arrival: '22:45',
+                status: 'delayed',
+                delay: 30,
+                passengers: ['Natalie Moore', 'Christopher Lee', 'Jessica White'],
+                gate: 'F15',
+                terminal: '2'
+            }
+        ];
+
+        let filteredFlights = [...flightData];
+
+        function formatTime(time) {
+            return time;
+        }
+
+        function formatDelay(minutes) {
+            if (minutes === 0) return 'On Time';
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            if (hours > 0) {
+                return `${hours}h ${mins}m delayed`;
+            }
+            return `${mins}m delayed`;
+        }
+
+        function updateStats() {
+            const totalPassengers = flightData.reduce((sum, flight) => sum + flight.passengers.length, 0);
+            const delayedFlights = filteredFlights.filter(f => f.status === 'delayed');
+            const affectedPassengers = delayedFlights.reduce((sum, flight) => sum + flight.passengers.length, 0);
+
+            document.getElementById('totalPassengers').textContent = totalPassengers;
+            document.getElementById('totalConnections').textContent = flightData.length;
+            document.getElementById('delayedCount').textContent = delayedFlights.length;
+            document.getElementById('affectedPassengers').textContent = affectedPassengers;
+
+            // Update last updated time
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        function renderFlights() {
+            const container = document.getElementById('flightsContainer');
+            
+            if (filteredFlights.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <h3>No flights found</h3>
+                        <p>Try adjusting your search or filter criteria</p>
+                    </div>
+                `;
+                updateStats();
+                return;
+            }
+
+            container.innerHTML = filteredFlights.map(flight => `
+                <div class="flight-card ${flight.status === 'delayed' ? 'delayed' : ''}">
+                    <div class="flight-header">
+                        <div class="flight-route">
+                            <div>
+                                <div class="flight-number">EK${flight.flightNumber.slice(2)}</div>
+                                <div class="route-info">
+                                    <strong>${flight.from}</strong>
+                                    <span class="arrow">→</span>
+                                    <strong>${flight.to}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status-badge status-${flight.status}">
+                            ${flight.status === 'delayed' ? '⚠️ ' : '✓ '}${formatDelay(flight.delay)}
+                        </div>
+                    </div>
+
+                    <div class="status-info">
+                        <div class="info-item">
+                            <div class="info-label">Departure</div>
+                            <div class="info-value">${flight.departure}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Arrival</div>
+                            <div class="info-value">${flight.arrival}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Gate</div>
+                            <div class="info-value">${flight.gate}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Terminal</div>
+                            <div class="info-value">${flight.terminal}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Passengers</div>
+                            <div class="info-value"><span class="passenger-count">${flight.passengers.length}</span></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 8px; text-transform: uppercase; font-weight: 600;">Connecting Passengers</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${flight.passengers.map(p => `<span style="background: #f0f0f0; padding: 5px 10px; border-radius: 4px; font-size: 13px; color: #333;">${p}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            updateStats();
+        }
+
+        function filterFlights() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredFlights = flightData.filter(flight => {
+                const matchesSearch = 
+                    flight.flightNumber.toLowerCase().includes(searchTerm) ||
+                    flight.from.toLowerCase().includes(searchTerm) ||
+                    flight.to.toLowerCase().includes(searchTerm) ||
+                    flight.passengers.some(p => p.toLowerCase().includes(searchTerm));
+
+                const matchesStatus = 
+                    statusFilter === '' || 
+                    flight.status === statusFilter;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            renderFlights();
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterFlights);
+        document.getElementById('statusFilter').addEventListener('change', filterFlights);
+
+        // Initial render
+        renderFlights();
+
+        // Simulate real-time updates every 30 seconds
+        setInterval(() => {
+            // In a real app, you'd fetch new data from an API here
+            // For now, we'll just update the timestamp
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }, 30000);
+    </script>
+</body>
+</html>
